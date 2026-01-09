@@ -1,0 +1,8 @@
+langchain
+langchain-openai
+langchain-community
+langchain-core
+langgraph
+duckduckgo-search
+python-dotenv
+tavily-python
