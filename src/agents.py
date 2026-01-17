@@ -2,7 +2,7 @@ from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from src.tools import tools, search_tool, web_scraper, seo_analyzer, image_prompt_generator
+from src.tools import tools, search_tool, web_scraper, seo_analyzer, image_prompt_generator, compliance_check
 from src.config import settings
 
 def create_agent(llm, tools, system_prompt):
@@ -38,7 +38,7 @@ researcher_prompt = (
 content_prompt = (
     "You are a Content Strategist. Your goal is to craft compelling marketing narratives. "
     "Based on the research provided, draft high-quality content. "
-    "Structure your content effectively (Introduction, Key Points, Conclusion). "
+    "Structure your content effectively (MUST include 'Introduction' and 'Conclusion' sections). "
     "Tailor the tone to the audience (Professional yet engaging)."
 )
 
@@ -56,12 +56,20 @@ visual_prompt = (
     "3. Describe why each prompt fits the content."
 )
 
+compliance_prompt = (
+    "You are a Compliance Officer. Your goal is to ensure all content meets strict publication guidelines. "
+    "1. Use the 'compliance_check' tool to validate the latest content draft. "
+    "2. If the tool reports issues, clearly list them and suggest fixes. "
+    "3. If the tool passes, confirm that the content is approved for publication."
+)
+
 # --- Create Agents ---
 
 research_agent = create_agent(llm, [search_tool, web_scraper], researcher_prompt)
-content_agent = create_agent(llm, [], content_prompt) # No tools needed for pure writing, maybe access to previous research
+content_agent = create_agent(llm, [], content_prompt)
 seo_agent = create_agent(llm, [seo_analyzer], seo_prompt)
 visual_agent = create_agent(llm, [image_prompt_generator], visual_prompt)
+compliance_agent = create_agent(llm, [compliance_check], compliance_prompt)
 
 # --- Node Functions ---
 
@@ -76,3 +84,6 @@ def seo_node(state):
 
 def visual_node(state):
     return agent_node(state, visual_agent, "Visual_Designer")
+
+def compliance_node(state):
+    return agent_node(state, compliance_agent, "Compliance_Officer")

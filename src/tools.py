@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_core.tools import tool
 from src.config import settings
+from src.guardrails import ContentValidator
 
 # --- Base Search Tool ---
 search_tool = DuckDuckGoSearchRun()
@@ -72,4 +73,13 @@ def image_prompt_generator(topic: str, tone: str = "professional") -> str:
         "Bright and engaging colors."
     )
 
-tools = [search_tool, web_scraper, seo_analyzer, image_prompt_generator]
+@tool
+def compliance_check(content: str) -> str:
+    """
+    Validates content against safety and policy guardrails.
+    Returns a status report.
+    """
+    result = ContentValidator.validate(content)
+    return result["feedback"]
+
+tools = [search_tool, web_scraper, seo_analyzer, image_prompt_generator, compliance_check]

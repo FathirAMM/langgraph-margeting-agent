@@ -6,11 +6,11 @@ from langchain_core.output_parsers.openai_functions import JsonOutputFunctionsPa
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.sqlite import SqliteSaver
 from src.state import AgentState
-from src.agents import research_node, content_node, seo_node, visual_node
+from src.agents import research_node, content_node, seo_node, visual_node, compliance_node
 from src.config import settings
 
 # --- Supervisor Logic ---
-members = ["Senior_Researcher", "Content_Strategist", "SEO_Optimizer", "Visual_Designer"]
+members = ["Senior_Researcher", "Content_Strategist", "SEO_Optimizer", "Visual_Designer", "Compliance_Officer"]
 
 system_prompt = (
     "You are the Lead Editor (Supervisor) of a marketing agency. "
@@ -21,8 +21,9 @@ system_prompt = (
     "2. Pass to 'Content_Strategist' to draft the content.\n"
     "3. Pass to 'SEO_Optimizer' to refine the draft.\n"
     "4. Pass to 'Visual_Designer' to create image assets.\n"
-    "5. Review the final package. If everything looks good, FINISH. "
-    "If revisions are needed, loop back to the appropriate worker.\n\n"
+    "5. Pass to 'Compliance_Officer' to check against guardrails.\n"
+    "6. If Compliance rejects, send back to 'Content_Strategist' for revisions.\n"
+    "7. If Compliance approves, FINISH.\n\n"
     "Given the conversation history, who should act next?"
 )
 
@@ -75,6 +76,7 @@ workflow.add_node("Senior_Researcher", research_node)
 workflow.add_node("Content_Strategist", content_node)
 workflow.add_node("SEO_Optimizer", seo_node)
 workflow.add_node("Visual_Designer", visual_node)
+workflow.add_node("Compliance_Officer", compliance_node)
 
 for member in members:
     workflow.add_edge(member, "Supervisor")
@@ -87,6 +89,7 @@ workflow.add_conditional_edges(
         "Content_Strategist": "Content_Strategist",
         "SEO_Optimizer": "SEO_Optimizer",
         "Visual_Designer": "Visual_Designer",
+        "Compliance_Officer": "Compliance_Officer",
         "FINISH": END,
     },
 )
