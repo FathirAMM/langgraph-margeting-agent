@@ -68,6 +68,20 @@ The system uses **LangGraph** to define a stateful graph where:
 7. **Compliance_Officer** approves or rejects (sending it back for revision).
 8. **Supervisor** finishes the task.
 
+## 🚢 Deployment
+
+For detailed instructions on how to build and run this application using Docker, please refer to the [Deployment Guide](DEPLOYMENT.md).
+
+### Quick Start (Docker)
+
+```bash
+# Build
+docker build -t marketing-agent .
+
+# Run (Interactive mode required)
+docker run -it --env-file .env marketing-agent
+```
+
 ## 🧪 Testing
 
 Run the test suite:
